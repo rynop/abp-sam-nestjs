@@ -1,0 +1,22 @@
+{
+  "local-SingleTable": [
+    {
+      "PutRequest": {
+        "Item": {
+          "PK": {
+            "S": "USER-UUID-1"
+          },
+          "SK": {
+            "S": "USER"
+          },
+          "Email": {
+            "S": "USER-UUID-1@example.com"
+          },
+          "Name": {
+            "S": "Joe Smith"
+          }
+        }
+      }
+    }
+  ]
+}

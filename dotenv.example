@@ -1,0 +1,12 @@
+# Vars for all enviornemnts (local, cloud)
+# Keep these in sync with sam-template.yml::Environment.Variables
+DDB_TABLENAME=local-SingleTable
+SECRET_KEY=thisIsSomeSecretKeyValue
+
+# Vars for local dev/test
+AWS_REGION=us-east-1
+AWS_PROFILE=default
+LISTEN_PORT=8080
+DYNAMO_LOCAL_ENDPT="http://localhost:8000"
+
+

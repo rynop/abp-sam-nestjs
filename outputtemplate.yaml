@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: 'AWS Blueprint for SAM using NestJS and DynamoDB
+
+  '
+Parameters:
+  StageName:
+    Type: String
+    Description: The stage name, also the lambda alias
+    Default: test
+  DBPassword:
+    Type: AWS::SSM::Parameter::Value<String>
+    Description: The SSM parameter key where the value is the DB password
+    Default: /test/subscription-management/master/TYPEORM_PASSWORD
+Globals:
+  Function:
+    Runtime: nodejs10.x
+    AutoPublishAlias:
+      Ref: StageName
+    DeploymentPreference:
+      Type: AllAtOnce
+    Timeout: 30
+    MemorySize: 512
+  Api:
+    Cors:
+      AllowMethods: '''DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'''
+      AllowHeaders: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      AllowOrigin: '''*'''
+      MaxAge: '''180'''
+Resources:
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Path: /{proxy+}
+      Method: ANY
+      StageName:
+        Ref: StageName
+      Variables:
+        Stage:
+          Ref: StageName
+  GetPresignedURLBCMFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/lambda/bcm.getpresignedurl
+      CodeUri: s3://deploy.shiftcals.com/2fbe28f6393594737de0dfb1df0da64a
+      Description:
+        Fn::Sub: '${StageName}: Get PresignedURL to upload BCM report to S3'
+      Environment:
+        Variables:
+          BUCKET: TEST
+      Policies:
+      - Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:PutObject
+          Resource:
+            Fn::Sub: arn:aws:s3:::${StageName}-${AWS::StackName}*
+      Events:
+        GetPresignedURL:
+          Type: Api
+          Properties:
+            RestApiId:
+              Ref: RestApi
+            Path: /getpresignedurl/bcm
+            Method: GET
+Outputs:
+  RestApi:
+    Description: API Gateway endpoint URL for Prod stage
+    Value:
+      Fn::Sub: https://${RestApi}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/

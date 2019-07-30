@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "StageName": "prod",
+    "DDBTableName": "prod-SingleTable",
+    "SomeSecretInSSM": "/prod/abp-sam-nestjs/master/envs/SECRET_KEY"
+  }
+}

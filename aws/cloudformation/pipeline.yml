@@ -1,0 +1,359 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: >
+  CodePipline to build and deploy lambda functions. Naming conveention, [repo]--[branch]--[eyecatcher]--cicd
+
+Parameters:
+  CodeBuildImage:
+    Description: Image for the CodeBuild container that runs linting, test cases, build. Make sure the version matches your Lambda runtime. Ex, golang:1.10.3
+    Type: String
+    Default: aws/codebuild/standard:2.0    
+  S3BucketForLambdaPackages:
+    Description: Name of bucket to hold lambda deploy packages
+    Type: String
+    Default: us-east-1--deploy.example.com    
+  BuildTimeout:
+    Description: Timeout in minutes for the build
+    Type: Number
+    Default: 5
+  CodeBuildProjectBuildSpecPath:
+    Description: Path to the buildspec used to build your app image, relative to your codebase
+    Type: String
+    Default: aws/codebuild/buildspec.yml
+  TestCloudFormationTemplateParameters:
+    Description: Test stack - Relative JSON config file that contains parameters passed CloudFormation
+    Type: String
+    Default: aws/cloudformation/parameters/test-pipeline-parameters.json
+  StagingCloudFormationTemplateParameters:
+    Description: Staging stack - Relative JSON config file that contains parameters passed CloudFormation
+    Type: String
+    Default: aws/cloudformation/parameters/staging-pipeline-parameters.json
+  ProdCloudFormationTemplateParameters:
+    Description: Prod stack - Relative JSON config file that contains parameters passed CloudFormation
+    Type: String
+    Default: aws/cloudformation/parameters/prod-pipeline-parameters.json
+  ApprovalNotificationArn:
+    Description: SNS ARN to receive notifications for approvals
+    Type: String
+    Default: arn:aws:sns:us-east-1:1111111:code-promotion-approvals
+  GithubOrg:
+    Description: The GitHub organization
+    Type: String    
+  GithubOAuthToken:
+    Description: The GitHub Personal Access Token so CodePipeline can get the code. https://github.com/settings/tokens.  Needs repo scope.
+    Type: String
+    NoEcho: true
+
+Resources:
+  ArtifactStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      VersioningConfiguration:
+        Status: Enabled
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codebuild.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodeBuild
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                - "logs:CreateLogGroup"
+                - "logs:CreateLogStream"
+                - "logs:PutLogEvents"
+                Effect: Allow
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*:*"
+              - Action:
+                - "s3:PutObject"
+                - "s3:GetObject"
+                - "s3:GetObjectVersion"
+                Effect: Allow
+                Resource:
+                  - "arn:aws:s3:::codepipeline-us-east-1-*"
+              - Action:
+                - 's3:*'
+                Effect: Allow
+                Resource: 
+                  - !Sub 
+                    - ${bucket}*
+                    - { bucket: !GetAtt ArtifactStoreBucket.Arn }
+                  - !Sub 
+                    - arn:aws:s3:::${bucket}*
+                    - { bucket: !Ref S3BucketForLambdaPackages }
+
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref 'AWS::StackName'
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_LARGE
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+        Image: !Ref CodeBuildImage
+        EnvironmentVariables:          
+          - Name: DEPLOY_BUCKET
+            Value: !Ref S3BucketForLambdaPackages
+      ServiceRole: !Ref CodeBuildRole
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: !Ref CodeBuildProjectBuildSpecPath
+      TimeoutInMinutes: !Ref BuildTimeout
+
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [codepipeline.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                - 's3:*'
+                - 'cloudformation:CreateStack'
+                - 'cloudformation:DescribeStacks'
+                - 'cloudformation:DeleteStack'
+                - 'cloudformation:UpdateStack'
+                - 'cloudformation:CreateChangeSet'
+                - 'cloudformation:ExecuteChangeSet'
+                - 'cloudformation:DeleteChangeSet'
+                - 'cloudformation:DescribeChangeSet'
+                - 'cloudformation:SetStackPolicy'
+                - 'iam:PassRole'
+                - 'sns:Publish'
+                - 'codebuild:BatchGetBuilds'
+                - 'codebuild:StartBuild'
+                - 'codecommit:*'
+                Effect: Allow
+                Resource: '*'
+
+  CFNRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Action: ['sts:AssumeRole']
+          Effect: Allow
+          Principal:
+            Service: [cloudformation.amazonaws.com]
+        Version: '2012-10-17'
+      Path: /
+      Policies:
+        - PolicyName: CloudFormationRole
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - '*'
+                Effect: Allow
+                Resource: '*'
+
+  # 'GithubWebhook' satisfies two requirements:
+  # -- Means that updates are pushed from GitHub, rather than AWS having to poll
+  # -- Means we can filter for required changes
+  GithubWebhook:
+    Type: 'AWS::CodePipeline::Webhook'
+    Properties:
+      Authentication: GITHUB_HMAC
+      AuthenticationConfiguration:
+        SecretToken: !Ref GitHubOAuthToken
+      RegisterWithThirdParty: 'true'
+      Filters:
+      - JsonPath: "$.ref"
+        MatchEquals: refs/heads/{Branch}
+      TargetPipeline: !Ref CodePipeline
+      TargetAction: Source
+      TargetPipelineVersion: !GetAtt CodePipeline.Version
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+        Location: !Ref 'ArtifactStoreBucket'
+        Type: S3
+      DisableInboundStageTransitions: []
+      Name: !Ref AWS::StackName
+      RoleArn: !GetAtt PipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              ActionTypeId:
+                Category: Source
+                Owner: ThirdParty
+                Provider: GitHub
+                Version: '1'
+              OutputArtifacts:
+                - Name: MyAppCode
+              Configuration:
+                Owner: !Ref GithubOrg
+                Repo: !Select [ 0, !Split [ '--', !Ref 'AWS::StackName' ] ]
+                PollForSourceChanges: false
+                Branch: !Select [ 1, !Split [ '--', !Ref 'AWS::StackName' ] ]
+                OAuthToken: !Ref GithubOAuthToken
+              RunOrder: 1   
+        - Name: Build
+          Actions:
+            - Name: CodeBuild
+              InputArtifacts:
+                - Name: MyAppCode
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              OutputArtifacts:
+                - Name: MyAppBuild
+              Configuration:
+                ProjectName: !Ref CodeBuildProject
+              RunOrder: 1
+        - Name: Test
+          Actions:
+            - Name: CreateChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              InputArtifacts:
+                - Name: MyAppCode
+                - Name: MyAppBuild
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CFNRole.Arn
+                Capabilities: CAPABILITY_IAM
+                StackName: !Sub "${AWS::StackName}--test--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--test--changeset"
+                TemplatePath: MyAppBuild::outputtemplate.yaml
+                TemplateConfiguration: !Sub "MyApp::${TestCloudFormationTemplateParameters}"
+              RunOrder: 1
+            - Name: ExecuteChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CFNRole.Arn
+                StackName: !Sub "${AWS::StackName}--test--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--test--changeset"
+              RunOrder: 2
+        # Seperate stage so test enviornment re-deployes are not blocked by approvals
+        - Name: PromoteTest
+          Actions:                    
+            - Name: Approve
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: '1'
+              Configuration:
+                NotificationArn: !Ref ApprovalNotificationArn
+                CustomData: !Sub '${AWS::StackName} test stack ready for promotion?'
+              RunOrder: 1                   
+        - Name: Staging
+          Actions:
+            - Name: CreateChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              InputArtifacts:
+                - Name: MyAppCode
+                - Name: MyAppBuild
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CFNRole.Arn
+                Capabilities: CAPABILITY_IAM
+                StackName: !Sub "${AWS::StackName}--staging--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--staging--changeset"
+                TemplatePath: MyAppBuild::outputtemplate.yaml
+                TemplateConfiguration: !Sub "MyApp::${StagingCloudFormationTemplateParameters}"
+              RunOrder: 1
+            - Name: ExecuteChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CFNRole.Arn
+                StackName: !Sub "${AWS::StackName}--staging--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--staging--changeset"
+              RunOrder: 2
+            - Name: ApproveStaging
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Provider: Manual
+                Version: '1'
+              Configuration:
+                NotificationArn: !Ref ApprovalNotificationArn
+                CustomData: !Sub '${AWS::StackName} ready to deploy to prod?'
+              RunOrder: 1              
+        - Name: Prod
+          Actions:
+            - Name: CreateChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              InputArtifacts:
+                - Name: MyAppCode
+                - Name: MyAppBuild
+              Configuration:
+                ActionMode: CHANGE_SET_REPLACE
+                RoleArn: !GetAtt CFNRole.Arn
+                Capabilities: CAPABILITY_IAM
+                StackName: !Sub "${AWS::StackName}--prod--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--prod--changeset"
+                TemplatePath: MyAppBuild::outputtemplate.yaml
+                TemplateConfiguration: !Sub "MyApp::${ProdCloudFormationTemplateParameters}"
+              RunOrder: 1
+            - Name: ExecuteChangeSet
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CloudFormation
+                Version: '1'
+              Configuration:
+                ActionMode: CHANGE_SET_EXECUTE
+                RoleArn: !GetAtt CFNRole.Arn
+                StackName: !Sub "${AWS::StackName}--prod--gen"
+                ChangeSetName: !Sub "${AWS::StackName}--prod--changeset"
+              RunOrder: 2
+
+Outputs:
+
+  CodeBuildRole:
+    Description: CodeBuildRole
+    Value: !Ref CodeBuildRole
+
+  S3ArtifactStore:
+    Description: Artifact Store Bucket
+    Value: !Ref ArtifactStoreBucket

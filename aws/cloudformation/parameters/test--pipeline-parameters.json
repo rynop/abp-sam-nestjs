@@ -1,0 +1,7 @@
+{
+  "Parameters": {
+    "StageName": "test",
+    "DDBTableName": "test-SingleTable",
+    "SomeSecretInSSM": "/test/abp-sam-nestjs/master/envs/SECRET_KEY"
+  }
+}

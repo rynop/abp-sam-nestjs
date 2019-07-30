@@ -1,0 +1,14 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      nodejs: 10
+    commands:
+      - yarn install
+      - npm run tsc
+      - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
+artifacts:
+  type: zip
+  files:
+    - sam-template.yml
+    - outputtemplate.yaml
