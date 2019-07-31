@@ -13,7 +13,7 @@ phases:
       - zip -r deploy/lambda.zip dist/ node_modules > /dev/null
       - ls -alh deploy/lambda.zip
       # Going to zip only files we care about to make lambda package small
-      - sed -i 's|CodeUri: \./|CodeUri: deploy/lambda.zip|' sam-template.yml
+      - "sed -i 's|CodeUri: \./|CodeUri: deploy/lambda.zip|' sam-template.yml"
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --s3-prefix $DEPLOY_S3_PREFIX --output-template-file outputtemplate.yaml
 artifacts:
   type: zip
