@@ -3,9 +3,10 @@ phases:
   install:
     runtime-versions:
       nodejs: 10
-    commands:
-      - yarn install --production --ignore-scripts --prefer-offline
-      - yarn run build
+    commands:      
+      - npm rebuild --update-binary # rebuild compiled pkgs without messing with yarn.lock
+      - make server
+      - npm prune --production #remove devDependencies to shrink filesize
       - zip -r deploy/lambda.zip dist/ node_modules
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
 artifacts:

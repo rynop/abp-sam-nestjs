@@ -177,14 +177,14 @@ Resources:
     Properties:
       Authentication: GITHUB_HMAC
       AuthenticationConfiguration:
-        SecretToken: !Ref GitHubOAuthToken
+        SecretToken: !Ref GithubOAuthToken
       RegisterWithThirdParty: 'true'
       Filters:
       - JsonPath: "$.ref"
         MatchEquals: refs/heads/{Branch}
-      TargetPipeline: !Ref CodePipeline
+      TargetPipeline: !Ref Pipeline
       TargetAction: Source
-      TargetPipelineVersion: !GetAtt CodePipeline.Version
+      TargetPipelineVersion: !GetAtt Pipeline.Version
 
   Pipeline:
     Type: AWS::CodePipeline::Pipeline

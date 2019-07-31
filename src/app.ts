@@ -27,7 +27,7 @@ export async function bootstrap(): Promise<NestApp> {
     await app.init();
 
     return {
-        app: app,
+        app,
         instance
     };
 }

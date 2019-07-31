@@ -18,6 +18,8 @@ Parameters:
     Description: The SSM parameter key for some secret value
     Default: /stage/repo_name/branch/envs/SECRET_KEY
 
+#TODO: start here, param for CodeURI
+
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -32,20 +34,19 @@ Globals:
       AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
       AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
       AllowOrigin: "'*'"
-      MaxAge: "'180'"
+      MaxAge: "'600'"
 
 Conditions:   
   NotStaging: !Not [!Equals [ !Ref StageName, staging ]]
+  IsLocal: !Equals [ !Ref StageName, local ]
   #If resources are in a seperate file with naming convention [stage]--[repo]--[branch]--[eyecatcher]--r 
   #the following line would exist in said resources file
   #NotStaging: !Not [!Equals [ !Select [ "0", !Split [ '--', !Ref 'AWS::StackName' ] ], staging ]]
 
 Resources:
-  RestApi:
+  APIG:
     Type: AWS::Serverless::Api
     Properties:
-      Path: /{proxy+}
-      Method: ANY
       StageName: !Ref StageName
       Variables:
         Stage: !Ref StageName
@@ -94,33 +95,41 @@ Resources:
     # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Type: AWS::Serverless::Function
     Properties:
+      #TODO: FunctionName?
       Handler: dist/apig-lambda.handler
-      CodeUri: deploy/lambda.zip
+      #CodeUri: deploy/lambda.zip
+      # When using sam local, use CWD not zip file. Use zip in AWS to reduce size
+      CodeUri: !If [IsLocal, ./, deploy/lambda.zip]
       Description: !Sub "${StageName}: Get PresignedURL to upload BCM report to S3"
       Environment:
         Variables:
+          # Keep these in sync with dotenv.example
+          APP_STAGE: !Ref StageName
           DDB_TABLENAME: !Ref DDBTableName
           SECRET_KEY: !Ref SomeSecretInSSM
+          ENV_TEST: 'hardcoded in sam-template.yml'
 
       Policies:
         - Version: '2012-10-17'
           Statement:
             - Effect: Allow
               Action:
-                - "dynamodb:Batch*",
-                - "dynamodb:Describe*",
-                - "dynamodb:Get*",
-                - "dynamodb:Query",
-                - "dynamodb:Scan",
-                - "dynamodb:DeleteItem",
-                - "dynamodb:UpdateItem",
+                - "dynamodb:Batch*"
+                - "dynamodb:Describe*"
+                - "dynamodb:Get*"
+                - "dynamodb:Query"
+                - "dynamodb:Scan"
+                - "dynamodb:DeleteItem"
+                - "dynamodb:UpdateItem"
                 - "dynamodb:PutItem"
               Resource: !Sub "arn:aws:dynamodb:::table/${DDBTableName}"
       Events:
         ProxyApiGreedy:
           Type: Api
           Properties:
-            RestApiId: !Ref RestApi
+            RestApiId: !Ref APIG
+            Path: /{proxy+}
+            Method: ANY
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

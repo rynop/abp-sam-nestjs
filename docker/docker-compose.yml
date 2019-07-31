@@ -1,15 +1,21 @@
-version: '3'
+version: '3.5'
 
 services:
   dynamo:
-    container_name: dynamodb
+    container_name: abp-sam-nestjs-dynamodb
     image: amazon/dynamodb-local
+    networks:
+      - backend
     ports:
       - '8000:8000'
     volumes:
       - dynamodata:/home/dynamodblocal
     working_dir: /home/dynamodblocal
     command: '-jar DynamoDBLocal.jar -sharedDb -dbPath .'
+
+networks:
+  backend:
+    name: abp-sam-backend
 
 volumes:
   dynamodata: {}

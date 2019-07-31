@@ -1,30 +1,51 @@
+.PHONY: all server clean run* dynamo* ngrok docker*
 
-# Thank you https://github.com/aspiration-labs/pyggpot/blob/master/Makefile
-.PHONY: all clean db db-down dynamo*
+server:
+	yarn run build
 
 #
 # Runners
 #
 
-run/local-server:
-	./build/cli server
-
 ngrok:
-	ngrok http -bind-tls=true -subdomain=$(shell hostname)-my-platform-api 8080
+	# Let ngrok handle HTTPS.  Vaild SSL cert needed for mobile dev. @see https://rynop.com/2019/05/09/howto-mobile-development-against-a-localhost-https-api/
+	ngrok http -bind-tls=true -subdomain=$(shell hostname)-my-platform-api 8081
 
-db-down:
-	cd docker && docker-compose down
+run/local-dev-server: dynamo/up
+	yarn run start:dev
 
-dynamo:
+run/watch:
+	yarn run watch
+
+run/sam-start-api: dynamo/up
+	sam local start-api -t sam-template.yml --skip-pull-image --profile default --parameter-overrides 'ParameterKey=StageName,ParameterValue=local ParameterKey=DDBTableName,ParameterValue=local-SingleTable ParameterKey=SomeSecretInSSM,ParameterValue=SecretSetInSamLocalParameterOverrides' --docker-network abp-sam-backend
+
+run/prod: server
+	node dist/main.js	
+
+#
+# Docker commands
+#
+
+dynamo/up:
 	cd docker && docker-compose up -d dynamo
 
-dynamo/init: dynamo	
+# Load local DynamoDB with sample data (dropping table if exists)
+dynamo/init: dynamo/up	
 	./dynamodb/create-schema-locally.sh
 	./dynamodb/load-data-locally.sh SingleTable
 
 dynamo/down:
 	cd docker && docker-compose stop dynamo
 
-# Do this in lieu of db-down @see https://docs.docker.com/compose/reference/down/
-dynamo/remove-volume:
+docker/down:
+	cd docker && docker-compose down
+
+# Do this in lieu of docker/down @see https://docs.docker.com/compose/reference/down/
+docker/remove-volume:
 	cd docker && docker-compose down --volumes
+
+clean:
+	rm -rf node_modules
+	rm -rf dist
+	rm -rf deploy
