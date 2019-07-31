@@ -1,0 +1,30 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "api",
+    "version": "1.0",
+    "title": "sample-api"
+  },
+  "basePath": "/v1",
+  "tags": [],
+  "schemes": [
+    "https"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "produces": [
+          "application/json"
+        ],
+        "consumes": [
+          "application/json"
+        ]
+      }
+    }
+  }
+}

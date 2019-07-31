@@ -4,8 +4,9 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:
-      - yarn install
-      - npm run tsc
+      - yarn install --production --ignore-scripts --prefer-offline
+      - yarn run build
+      - zip -r deploy/lambda.zip dist/ node_modules
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
 artifacts:
   type: zip

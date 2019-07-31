@@ -12,6 +12,6 @@
 
 ## Setup
 
-1.  From [SSM](https://console.aws.amazon.com/systems-manager/parameters) create a key `/test/abp-sam-nestjs/master/envs/SECRET_KEY` with any value you like.  [sam-template.yml](./sam-template.yml) will pull in the value for an Lambda env var.  The key path used, is dictated by the stage specific cloudformaton parameter file in [aws/cloudformation/parameters](./aws/cloudformation/parameters)
+1.  From [SSM Console](https://console.aws.amazon.com/systems-manager/parameters) create a key `/test/abp-sam-nestjs/master/envs/SECRET_KEY` with any value you like.  [sam-template.yml](./sam-template.yml) will pull in the value for an Lambda env var.  The key path used, is dictated by the stage specific cloudformaton parameter file in [aws/cloudformation/parameters](./aws/cloudformation/parameters)
 
 
