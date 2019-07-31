@@ -100,7 +100,7 @@ Resources:
     # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${StageName}--${AWS::StackName}"
+      FunctionName: !Sub "${AWS::StackName}--Monolithic"
       Handler: dist/apig-lambda.handler
       # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
       CodeUri: ./
