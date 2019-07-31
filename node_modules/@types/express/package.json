@@ -1,0 +1,28 @@
+{
+    "name": "@types/express",
+    "version": "4.17.0",
+    "description": "TypeScript definitions for Express",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Boris Yankov",
+            "url": "https://github.com/borisyankov",
+            "githubUsername": "borisyankov"
+        }
+    ],
+    "main": "",
+    "types": "index",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/express"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/body-parser": "*",
+        "@types/express-serve-static-core": "*",
+        "@types/serve-static": "*"
+    },
+    "typesPublisherContentHash": "39d6f8d89e5d9f653b4e7b4d19c2042beb580d2c3e4908f242c4b9f48257ad7b",
+    "typeScriptVersion": "2.2"
+}

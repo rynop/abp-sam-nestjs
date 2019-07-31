@@ -4,6 +4,7 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:      
+      # node_modules are checked in, so that bits tested locally are same used in test,staging and production
       - npm rebuild --update-binary # rebuild compiled pkgs without messing with yarn.lock
       - make server
       - npm prune --production #remove devDependencies to shrink filesize

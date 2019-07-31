@@ -1,0 +1,56 @@
+{
+  "name": "fastify-swagger",
+  "version": "2.4.0",
+  "description": "Generate Swagger files automatically for Fastify.",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "node prepare-swagger-ui",
+    "test": "standard && tap test/*.js && npm run typescript",
+    "prepublishOnly": "npm run prepare",
+    "typescript": "tsc --project ./tsconfig.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastify/fastify-swagger.git"
+  },
+  "keywords": [
+    "fastify",
+    "swagger"
+  ],
+  "author": "Tomas Della Vedova - @delvedor (http://delved.org)",
+  "contributors": [
+    {
+      "name": "Matteo Collina",
+      "email": "hello@matteocollina.com"
+    }
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fastify/fastify-swagger/issues"
+  },
+  "homepage": "https://github.com/fastify/fastify-swagger#readme",
+  "devDependencies": {
+    "@types/node": "^11.9.0",
+    "fastify": "^2.0.0",
+    "fs-extra": "^7.0.1",
+    "joi": "^14.3.1",
+    "joi-to-json-schema": "^4.0.0",
+    "pre-commit": "^1.2.2",
+    "standard": "^12.0.1",
+    "swagger-parser": "^6.0.3",
+    "swagger-ui-dist": "3.22.1",
+    "tap": "^12.5.3",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "@types/swagger-schema-official": "^2.0.15",
+    "fastify-plugin": "^1.5.0",
+    "fastify-static": "^2.3.4",
+    "js-yaml": "^3.12.1"
+  },
+  "standard": {
+    "ignore": [
+      "static"
+    ]
+  }
+}

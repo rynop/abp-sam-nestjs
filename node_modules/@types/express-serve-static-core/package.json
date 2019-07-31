@@ -1,0 +1,52 @@
+{
+    "name": "@types/express-serve-static-core",
+    "version": "4.16.7",
+    "description": "TypeScript definitions for Express",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Boris Yankov",
+            "url": "https://github.com/borisyankov",
+            "githubUsername": "borisyankov"
+        },
+        {
+            "name": "Michał Lytek",
+            "url": "https://github.com/19majkel94",
+            "githubUsername": "19majkel94"
+        },
+        {
+            "name": "Kacper Polak",
+            "url": "https://github.com/kacepe",
+            "githubUsername": "kacepe"
+        },
+        {
+            "name": "Satana Charuwichitratana",
+            "url": "https://github.com/micksatana",
+            "githubUsername": "micksatana"
+        },
+        {
+            "name": "Sami Jaber",
+            "url": "https://github.com/samijaber",
+            "githubUsername": "samijaber"
+        },
+        {
+            "name": "aereal",
+            "url": "https://github.com/aereal",
+            "githubUsername": "aereal"
+        }
+    ],
+    "main": "",
+    "types": "index",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/express-serve-static-core"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/node": "*",
+        "@types/range-parser": "*"
+    },
+    "typesPublisherContentHash": "675a45c00d761f3a8ec3acbababe994b54da2f7018e29cac55e2d4e989fc57b9",
+    "typeScriptVersion": "2.2"
+}
