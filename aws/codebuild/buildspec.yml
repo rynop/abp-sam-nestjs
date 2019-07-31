@@ -4,11 +4,11 @@ phases:
     runtime-versions:
       nodejs: 10
     commands:      
-      - npm rebuild --update-binary # rebuild compiled pkgs without messing with yarn.lock
+      - npm rebuild --update-binary # rebuild compiled pkgs without messing with yarn.lock      
+      - make server
       # node_modules are checked in, so that bits tested locally are same used in test,staging and production
       - npm prune --production #remove devDependencies to shrink filesize      
-      - make server
-      - rm -rf node_modules/typescript # typescript intentionally not in devDependencies (so we can tsc after prune)
+      - cd node_modules && rm -rf typescript jest
       - mkdir deploy
       - zip -r deploy/lambda.zip dist/ node_modules
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
