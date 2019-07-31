@@ -246,7 +246,7 @@ Resources:
                 StackName: !Sub "${AWS::StackName}--test--gen"
                 ChangeSetName: !Sub "${AWS::StackName}--test--changeset"
                 TemplatePath: MyAppBuild::outputtemplate.yaml
-                TemplateConfiguration: !Sub "MyApp::${TestCloudFormationTemplateParameters}"
+                TemplateConfiguration: !Sub "MyAppCode::${TestCloudFormationTemplateParameters}"
               RunOrder: 1
             - Name: ExecuteChangeSet
               ActionTypeId:
@@ -291,7 +291,7 @@ Resources:
                 StackName: !Sub "${AWS::StackName}--staging--gen"
                 ChangeSetName: !Sub "${AWS::StackName}--staging--changeset"
                 TemplatePath: MyAppBuild::outputtemplate.yaml
-                TemplateConfiguration: !Sub "MyApp::${StagingCloudFormationTemplateParameters}"
+                TemplateConfiguration: !Sub "MyAppCode::${StagingCloudFormationTemplateParameters}"
               RunOrder: 1
             - Name: ExecuteChangeSet
               ActionTypeId:
@@ -333,7 +333,7 @@ Resources:
                 StackName: !Sub "${AWS::StackName}--prod--gen"
                 ChangeSetName: !Sub "${AWS::StackName}--prod--changeset"
                 TemplatePath: MyAppBuild::outputtemplate.yaml
-                TemplateConfiguration: !Sub "MyApp::${ProdCloudFormationTemplateParameters}"
+                TemplateConfiguration: !Sub "MyAppCode::${ProdCloudFormationTemplateParameters}"
               RunOrder: 1
             - Name: ExecuteChangeSet
               ActionTypeId:
