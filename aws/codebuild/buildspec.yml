@@ -12,7 +12,8 @@ phases:
       - cd ..
       - ls -al
       - mkdir deploy
-      - zip -r deploy/lambda.zip dist/ node_modules
+      - zip -r deploy/lambda.zip dist/ node_modules > /dev/null
+      - ls -al deploy/lambda.zip
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
 artifacts:
   type: zip
