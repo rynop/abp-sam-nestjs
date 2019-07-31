@@ -11,7 +11,7 @@ phases:
       - cd node_modules && rm -rf typescript jest && cd ..
       - mkdir deploy
       - zip -r deploy/lambda.zip dist/ node_modules > /dev/null
-      # - ls -alh deploy/lambda.zip
+      - ls -alh deploy/lambda.zip
       - 'sed -i "s|CodeUri: \./|CodeUri: deploy/lambda.zip|" sam-template.yml'
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --s3-prefix $DEPLOY_S3_PREFIX --output-template-file outputtemplate.yaml
 artifacts:
