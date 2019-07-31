@@ -50,6 +50,7 @@ Resources:
       StageName: !Ref StageName
       Variables:
         Stage: !Ref StageName
+#TODO: add Tags when supported https://github.com/awslabs/serverless-application-model/issues/384
 
   DDBTable: 
     Type: AWS::DynamoDB::Table
@@ -57,6 +58,10 @@ Resources:
     Condition: NotStaging
     Properties: 
       TableName: !Ref DDBTableName
+      Tags: 
+        - 
+          Key: stage
+          Value: !Ref StageName
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions: 
         - 
@@ -100,6 +105,10 @@ Resources:
       # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
       CodeUri: ./
       Description: !Sub "${StageName}: Get PresignedURL to upload BCM report to S3"
+      Tags: 
+        - 
+          Key: stage
+          Value: !Ref StageName      
       Environment:
         Variables:
           # Keep these in sync with dotenv.example

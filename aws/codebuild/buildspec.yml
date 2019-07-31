@@ -8,7 +8,7 @@ phases:
       - make server
       # node_modules are checked in, so that bits tested locally are same used in test,staging and production
       - npm prune --production #remove devDependencies to shrink filesize      
-      - cd node_modules && rm -rf typescript jest && cd ..
+      - cd node_modules && rm -rf typescript jest @types @jest @babel && cd ..
       - mkdir deploy
       - zip -r deploy/lambda.zip dist/ node_modules > /dev/null
       - ls -alh deploy/lambda.zip
