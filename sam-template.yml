@@ -136,4 +136,4 @@ Outputs:
   # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
   RestApi:
     Description: "API Gateway endpoint URL for Prod stage"
-    Value: !Sub "https://${ProxyApiGreedy}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
+    Value: !Sub "https://${APIG}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
