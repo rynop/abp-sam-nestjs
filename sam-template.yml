@@ -130,7 +130,7 @@ Resources:
                 - "dynamodb:DeleteItem"
                 - "dynamodb:UpdateItem"
                 - "dynamodb:PutItem"
-              Resource: !Sub "arn:aws:dynamodb:::table/${DDBTableName}"
+              Resource: !Sub "arn:aws:dynamodb:*:*:table/${DDBTableName}"
       Events:
         ProxyApiGreedy:
           Type: Api
