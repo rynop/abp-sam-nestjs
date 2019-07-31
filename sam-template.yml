@@ -100,15 +100,15 @@ Resources:
     # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Type: AWS::Serverless::Function
     Properties:
-      #TODO: FunctionName?
+      FunctionName: !Sub "${StageName}--${AWS::StackName}"
       Handler: dist/apig-lambda.handler
       # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
       CodeUri: ./
       Description: !Sub "${StageName}: Get PresignedURL to upload BCM report to S3"
-      Tags: 
-        - 
-          Key: stage
-          Value: !Ref StageName      
+      # Tags: 
+      #   - 
+      #     Key: stage
+      #     Value: !Ref StageName      
       Environment:
         Variables:
           # Keep these in sync with dotenv.example
