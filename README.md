@@ -1,6 +1,15 @@
 # abp-sam-nestjs
 
-[aws-blueprint](https://github.com/rynop/aws-blueprint) example for a [NestJS](https://nestjs.com/) based API using AWS [Serverless Application Module (SAM)](https://github.com/awslabs/serverless-application-model) and DynamoDB (complete with local dev using [dynamodb local](https://hub.docker.com/r/amazon/dynamodb-local)).
+[aws-blueprint](https://github.com/rynop/aws-blueprint) example for a [NestJS](https://nestjs.com/) based API using AWS [Serverless Application Module (SAM)](https://github.com/awslabs/serverless-application-model).
+
+Features:
+
+-  DynamoDB (complete with local dev using [dynamodb local](https://hub.docker.com/r/amazon/dynamodb-local)).
+-  Local dev server with hot-reload (quicker developer iterations than `sam local`)
+-  Simulate API Gateway -> Lambda locally via `sam local start-api`.  Talks to DynamoDB local via docker-compose.
+-  Multi-stage CI/CD via CodePipeline.  Convention over configuration, designed for teams and feature branches.
+-  Straight forward enviornment varible configuration.  Supports pulling from SSM when running in AWS.
+-  Realtime CodePipeline source pulls via GitHub webhook
 
 ## Prerequisites
 
@@ -14,6 +23,7 @@
 
 1.  `cp dotenv.example .env`
 1.  `make dynamo/init` will load local DynamoDB with sample data (dropping table if exists).
+1.  `yarn install`
 1.  `make run/local-dev-server` will start server locally, and hot-reload on changes.
 1.  Open http://127.0.0.1:8080/v1 If you look at the console you will see the app env vars. `ENV_TEST` is undefined? Keep reading...
 
