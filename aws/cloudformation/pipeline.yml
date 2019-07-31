@@ -107,6 +107,8 @@ Resources:
         EnvironmentVariables:          
           - Name: DEPLOY_BUCKET
             Value: !Ref S3BucketForLambdaPackages
+          - Name: DEPLOY_S3_PREFIX
+            Value: !Ref AWS::StackName            
       ServiceRole: !Ref CodeBuildRole
       Source:
         Type: CODEPIPELINE
