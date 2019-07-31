@@ -56,7 +56,7 @@ Resources:
     # Staging uses prod table, so don't create if staging
     Condition: NotStaging
     Properties: 
-      TableName: !ref DDBTableName
+      TableName: !Ref DDBTableName
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions: 
         - 
