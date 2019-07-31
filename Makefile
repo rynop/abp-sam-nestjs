@@ -1,7 +1,8 @@
 .PHONY: all server clean run* dynamo* ngrok docker*
 
 server:
-	yarn run build
+	rm -rf dist
+	yarn run tsc -p tsconfig.build.json
 
 #
 # Runners
@@ -46,6 +47,5 @@ docker/remove-volume:
 	cd docker && docker-compose down --volumes
 
 clean:
-	rm -rf node_modules
 	rm -rf dist
 	rm -rf deploy
