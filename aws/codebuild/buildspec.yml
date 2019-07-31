@@ -9,6 +9,8 @@ phases:
       # node_modules are checked in, so that bits tested locally are same used in test,staging and production
       - npm prune --production #remove devDependencies to shrink filesize      
       - cd node_modules && rm -rf typescript jest
+      - cd ..
+      - ls -al
       - mkdir deploy
       - zip -r deploy/lambda.zip dist/ node_modules
       - aws cloudformation package --template-file sam-template.yml --s3-bucket $DEPLOY_BUCKET --output-template-file outputtemplate.yaml
