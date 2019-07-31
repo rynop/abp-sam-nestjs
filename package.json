@@ -2,7 +2,10 @@
   "name": "abp-sam-nestjs",
   "version": "0.0.1",
   "description": "",
-  "author": "",
+  "author": "ryan.pendergast@gmail.com",
+  "engines": {
+    "node": ">=10.15 <11"
+  },
   "license": "MIT",
   "scripts": {
     "nest": "nest",
