@@ -12,7 +12,7 @@ if (process.env['AWS_SAM_LOCAL']) {
 
 @Injectable()
 export class AppService {
-  private readonly logger = new Logger(AppService.name);
+  private readonly logger = new Logger(AppService.name, false);
 
   async getHello(): Promise<any> {
     // this.logger.log(process.env);    

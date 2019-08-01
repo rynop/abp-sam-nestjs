@@ -43,8 +43,8 @@ Globals:
         "DataTraceEnabled": True,
 
         # On all Paths & methods
-        # "ResourcePath": "/*",
-        # "HttpMethod": "*",
+        "ResourcePath": "/*",
+        "HttpMethod": "*",
     }]  
 
 Conditions:   

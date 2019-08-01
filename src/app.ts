@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { AppModule } from './app.module';
 import {
     FastifyAdapter,
@@ -20,6 +20,9 @@ export async function bootstrap(): Promise<NestApp> {
     const app = await NestFactory.create<NestFastifyApplication>(
         AppModule,
         new FastifyAdapter(instance),
+        {
+            logger: 'local' == process.env['APP_STAGE'] ? new Logger() : console
+        }
     );
 
     app.setGlobalPrefix('v1');
