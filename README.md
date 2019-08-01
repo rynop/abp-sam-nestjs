@@ -4,12 +4,12 @@
 
 Features:
 
--  DynamoDB (complete with local dev using [dynamodb local](https://hub.docker.com/r/amazon/dynamodb-local)).
--  Local dev server with hot-reload (quicker developer iterations than `sam local`)
+-  [DynamoDB local](https://hub.docker.com/r/amazon/dynamodb-local)) with [tools](./dynamodb) to create table(s) and load data.
+-  Local dev server with hot-reload (quicker developer iterations than `sam local`).
 -  Simulate API Gateway -> Lambda locally via `sam local start-api`.  Talks to DynamoDB local via docker-compose.
 -  Multi-stage CI/CD via CodePipeline.  Convention over configuration, designed for teams and feature branches.
 -  Straight forward enviornment varible configuration.  Supports pulling from SSM when running in AWS.
--  Realtime CodePipeline source pulls via GitHub webhook
+-  Realtime CodePipeline source pulls via GitHub webhook.
 
 ## Prerequisites
 
