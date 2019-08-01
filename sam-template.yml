@@ -36,6 +36,17 @@ Globals:
       AllowOrigin: "'*'"
       MaxAge: "'600'"
 
+    # Logging, Metrics, Throttling, and all other Stage settings
+    MethodSettings: [{
+        "LoggingLevel": "INFO",
+        "MetricsEnabled": True,
+        "DataTraceEnabled": True,
+
+        # On all Paths & methods
+        # "ResourcePath": "/*",
+        # "HttpMethod": "*",
+    }]  
+
 Conditions:   
   NotStaging: !Not [!Equals [ !Ref StageName, staging ]]
   IsLocal: !Equals [ !Ref StageName, local ]
