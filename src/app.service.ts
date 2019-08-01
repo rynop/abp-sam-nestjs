@@ -36,7 +36,8 @@ export class AppService {
 
     try {
       const d = await ddb.getItem(params).promise();
-      return d.Item;
+      this.logger.warn(d.Item);
+      return d.Item || {};
     } catch (error) {
       this.logger.error(error);
       throw error;
