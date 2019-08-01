@@ -10,6 +10,7 @@ Features:
 -  Multi-stage CI/CD via CodePipeline.  Convention over configuration, designed for teams and feature branches.
 -  Straight forward enviornment varible configuration.  Supports pulling from SSM when running in AWS.
 -  Realtime CodePipeline source pulls via GitHub webhook.
+-  NestJS configured to use the performant [Fastify](https://docs.nestjs.com/techniques/performance) framework.
 
 ## Prerequisites
 
