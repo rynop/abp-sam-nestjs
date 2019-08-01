@@ -113,7 +113,7 @@ Resources:
       Handler: dist/apig-lambda.handler
       # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
       CodeUri: ./
-      Description: !Sub "${StageName}: Get PresignedURL to upload BCM report to S3"
+      Description: !Sub "${StageName}: NestJS API"
       Tags: 
         Stage: !Ref StageName      
       Environment:
@@ -145,15 +145,6 @@ Resources:
             RestApiId: !Ref APIG
             Path: /{proxy+}
             Method: ANY
-
-  ApigToLambdaPermission:
-      Type: "AWS::Lambda::Permission"
-      DependsOn:
-      - MonolithicFunction
-      Properties:
-        Action: lambda:InvokeFunction
-        FunctionName: !Ref MonolithicFunction
-        Principal: apigateway.amazonaws.com
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
