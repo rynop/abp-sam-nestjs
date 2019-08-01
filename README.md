@@ -14,12 +14,12 @@ Features:
 ## Prerequisites
 
 1.  [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-1.  Create a [personal github access token](https://github.com/settings/tokens). This token will be used by the CI/CD to pull code. `repo` and `admin:repo_hook` scopes required.  If you work in a team, it is recommended to create a seperate github user account for this.
+1.  Create a [github access token](https://github.com/settings/tokens). This token will be used by the CI/CD to pull code. Required scopes: `admin:repo_hook, public_repo, repo:status, repo_deployment`.
 1.  S3 bucket to hold Lambda deployment zips. Only need 1 bucket per AWS account.
 1.  Docker
 1.  An SNS topic for CI/CD code promotion approvals. Subscribe your email address to it.
 
-## Quickstart - local dev server with hot-reload
+## Quickstart - local dev server with auto-reload
 
 1.  `cp dotenv.example .env`
 1.  `make dynamo/init` will load local DynamoDB with sample data (dropping table if exists).
@@ -46,4 +46,5 @@ The parameter `SomeSecretInSSM` in [sam-template.yml](./sam-template.yml) dictat
 1. Clone this repo
 1. From [SSM Console](https://console.aws.amazon.com/systems-manager/parameters) create a parameter `/test/abp-sam-nestjs/master/envs/SECRET_KEY` with any value you like.
 1. Create a CI/CD pipeline via [CloudFormation](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/template) using [aws/cloudformation/pipeline.yml](./aws/cloudformation/pipeline.yml) using the name `abp-sam-nestjs--master--api--cicd` (naming convention is `[gitrepo]--[branch]--[eyecatcher]--cicd`)
+1. `git push` and watch the [pipeline](https://console.aws.amazon.com/codesuite/codepipeline/pipelines).  Will need to approve to promote to next stage.  URL to your API is in the `outputs` of the `ExecuteChangeSet` CloudFormation.
 
