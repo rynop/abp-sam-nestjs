@@ -60,7 +60,7 @@ Resources:
       TableName: !Ref DDBTableName
       Tags: 
         - 
-          Key: stage
+          Key: Stage
           Value: !Ref StageName
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions: 
@@ -105,10 +105,8 @@ Resources:
       # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
       CodeUri: ./
       Description: !Sub "${StageName}: Get PresignedURL to upload BCM report to S3"
-      # Tags: 
-      #   - 
-      #     Key: stage
-      #     Value: !Ref StageName      
+      Tags: 
+        Stage: !Ref StageName      
       Environment:
         Variables:
           # Keep these in sync with dotenv.example
