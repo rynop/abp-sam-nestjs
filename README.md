@@ -4,7 +4,7 @@
 
 Features:
 
--  [DynamoDB local](https://hub.docker.com/r/amazon/dynamodb-local)) with [tools](./dynamodb) to create table(s) and load data.
+-  [DynamoDB local](https://hub.docker.com/r/amazon/dynamodb-local) with [tools](./dynamodb) to create table(s) and load data.
 -  Local dev server with hot-reload (quicker developer iterations than `sam local`).
 -  Simulate API Gateway -> Lambda locally via `sam local start-api`.  Talks to DynamoDB local via docker-compose.
 -  Multi-stage CI/CD via CodePipeline.  Convention over configuration, designed for teams and feature branches.
