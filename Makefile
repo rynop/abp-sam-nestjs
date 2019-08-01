@@ -19,7 +19,7 @@ run/watch:
 	yarn run watch
 
 run/sam-start-api: dynamo/up
-	sam local start-api -t sam-template.yml --skip-pull-image --profile default \
+	sam local start-api -t aws/cloudformation/sam-template.yml --skip-pull-image --profile default \
 	--docker-network abp-sam-backend \
 	--parameter-overrides 'ParameterKey=StageName,ParameterValue=local ParameterKey=DDBTableName,ParameterValue=local-SingleTable ParameterKey=SomeSecretInSSM,ParameterValue=SecretSetInSamLocalParameterOverrides'	
 

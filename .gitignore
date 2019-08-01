@@ -65,3 +65,5 @@ typings/
 /dist/
 .DS_Store
 /deploy/
+outputtemplate.yaml
+

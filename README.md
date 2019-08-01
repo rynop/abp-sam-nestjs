@@ -32,7 +32,7 @@ Features:
 
 This repo utlizes `sam local start-api` [cli](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using-start-api.html) to simulate APIG->Lambda->NestJS.
 
-Enviornment variables are pulled from `sam-template.yml::Environment.Variables` (not `.env`).  To simulate how these will be set in cloudformation, the `--parameter-overrides` `sam` option is used.  See `run/sam-start-api` in [Makefile](./Makefile) for an example.
+Enviornment variables are pulled from [sam-template.yml](./aws/cloudformation/sam-template.yml)`::Environment.Variables` (not `.env`).  To simulate how these will be set in cloudformation, the `--parameter-overrides` `sam` option is used.  See `run/sam-start-api` in [Makefile](./Makefile) for an example.
 
 1. `make run watch` will compile typescript on file changes.
 1. In another terminal run `make run/sam-start-api`
@@ -42,7 +42,7 @@ Startup is slow right? This simulates Lambda cold starts. See [here](https://git
 
 ## Deploying to AWS via CI/CD (AWS CodePipeline) using GitHub webhook
 
-The parameter `SomeSecretInSSM` in [sam-template.yml](./sam-template.yml) dictates where in [SSM](https://console.aws.amazon.com/systems-manager/parameters) to pull a value, which is then set as an env var in the lambda (see `SECRET_KEY` in [sam-template.yml](./sam-template.yml)). In CodePipeline you set the `SomeSecretInSSM` param value on a stage-by-stage basis [aws/cloudformation/parameters](./aws/cloudformation/parameters).  In [test-pipeline-parameters.json](./aws/cloudformation/parameters/test--pipeline-parameters.json) you'll notice it is set to `/test/abp-sam-nestjs/master/envs/SECRET_KEY`. If you update the value in SSM, just execute a stack update to [get the new env var into lambda](https://aws.amazon.com/blogs/mt/integrating-aws-cloudformation-with-aws-systems-manager-parameter-store/).
+The parameter `SomeSecretInSSM` in [sam-template.yml](./aws/cloudformation/sam-template.yml) dictates where in [SSM](https://console.aws.amazon.com/systems-manager/parameters) to pull a value, which is then set as an env var in the lambda (see `SECRET_KEY` in [sam-template.yml](./aws/cloudformation/sam-template.yml)). In CodePipeline you set the `SomeSecretInSSM` param value on a stage-by-stage basis [aws/cloudformation/parameters](./aws/cloudformation/parameters).  In [test-pipeline-parameters.json](./aws/cloudformation/parameters/test--pipeline-parameters.json) you'll notice it is set to `/test/abp-sam-nestjs/master/envs/SECRET_KEY`. If you update the value in SSM, just execute a stack update to [get the new env var into lambda](https://aws.amazon.com/blogs/mt/integrating-aws-cloudformation-with-aws-systems-manager-parameter-store/).
 
 1. Clone this repo
 1. From [SSM Console](https://console.aws.amazon.com/systems-manager/parameters) create a parameter `/test/abp-sam-nestjs/master/envs/SECRET_KEY` with any value you like.

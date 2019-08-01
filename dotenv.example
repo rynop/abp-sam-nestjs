@@ -1,5 +1,5 @@
 # Vars for all enviornemnts (local, test, prod)
-# Keep these in sync with sam-template.yml::Environment.Variables
+# Keep these in sync with aws/cloudformation/sam-template.yml::Environment.Variables
 APP_STAGE=local
 DDB_TABLENAME=local-SingleTable
 SECRET_KEY=thisIsSomeSecretKeyValue
