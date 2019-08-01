@@ -18,8 +18,6 @@ Parameters:
     Description: The SSM parameter key for some secret value
     Default: /stage/repo_name/branch/envs/SECRET_KEY
 
-#TODO: start here, param for CodeURI
-
 # More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
@@ -147,6 +145,15 @@ Resources:
             RestApiId: !Ref APIG
             Path: /{proxy+}
             Method: ANY
+
+  ApigToLambdaPermission:
+      Type: "AWS::Lambda::Permission"
+      DependsOn:
+      - MonolithicFunction
+      Properties:
+        Action: lambda:InvokeFunction
+        FunctionName: !Ref MonolithicFunction
+        Principal: apigateway.amazonaws.com
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
