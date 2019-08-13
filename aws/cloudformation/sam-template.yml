@@ -1,0 +1,155 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS Blueprint for SAM using NestJS and on-demand DynamoDB.  Single lambda serves entire API via proxy+.
+  Supports CORS from ALL origins
+
+Parameters:
+  StageName:
+    Type: String
+    Description: The stage name, also the lambda alias
+    Default: test
+  DDBTableName:
+    Type: String
+    Description: DDB_TABLENAME env var
+    Default: test-SingleTable
+  SomeSecretInSSM:
+    Type: "AWS::SSM::Parameter::Value<String>"
+    Description: The SSM parameter key for some secret value
+    Default: /stage/repo_name/branch/envs/SECRET_KEY
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Runtime: nodejs10.x
+    AutoPublishAlias: !Ref StageName
+    DeploymentPreference:
+      Type: AllAtOnce
+    Timeout: 30
+    MemorySize: 512
+  Api: # https://alexharv074.github.io/2019/03/31/introduction-to-sam-part-iii-adding-a-proxy-endpoint-and-cors-configuration.html#cors-configuration
+    Cors:
+      AllowMethods: "'DELETE,GET,HEAD,OPTIONS,PATCH,POST,PUT'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+      MaxAge: "'600'"
+
+    # Logging, Metrics, Throttling, and all other Stage settings
+    MethodSettings: [{
+        "LoggingLevel": "INFO",
+        "MetricsEnabled": True,
+        "DataTraceEnabled": True,
+
+        # On all Paths & methods
+        "ResourcePath": "/*",
+        "HttpMethod": "*",
+    }]  
+
+Conditions:   
+  NotStaging: !Not [!Equals [ !Ref StageName, staging ]]
+  IsLocal: !Equals [ !Ref StageName, local ]
+  #If resources are in a seperate file with naming convention [stage]--[repo]--[branch]--[eyecatcher]--r 
+  #the following line would exist in said resources file
+  #NotStaging: !Not [!Equals [ !Select [ "0", !Split [ '--', !Ref 'AWS::StackName' ] ], staging ]]
+
+Resources:
+  APIG:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref StageName
+      Variables:
+        Stage: !Ref StageName
+#TODO: add Tags when supported https://github.com/awslabs/serverless-application-model/issues/384
+
+  DDBTable: 
+    Type: AWS::DynamoDB::Table
+    # Staging uses prod table, so don't create if staging
+    Condition: NotStaging
+    Properties: 
+      TableName: !Ref DDBTableName
+      Tags: 
+        - 
+          Key: Stage
+          Value: !Ref StageName
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions: 
+        - 
+          AttributeName: "PK"
+          AttributeType: "S"
+        - 
+          AttributeName: "SK"
+          AttributeType: "S"
+        - 
+          AttributeName: "GSI1PK"
+          AttributeType: "S"
+        - 
+          AttributeName: "GSI1SK"
+          AttributeType: "S"          
+      KeySchema: 
+        - 
+          AttributeName: "PK"
+          KeyType: "HASH"
+        - 
+          AttributeName: "SK"
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes: 
+        - 
+          IndexName: "GSI1"
+          KeySchema: 
+            - 
+              AttributeName: "GSI1PK"
+              KeyType: "HASH"
+            - 
+              AttributeName: "GSI1SK"
+              KeyType: "RANGE"              
+          Projection: 
+            ProjectionType: "ALL"      
+
+  MonolithicFunction:
+    # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}--Monolithic"
+      Handler: dist/apig-lambda.handler
+      # CodeUri is replaced in buildspec.yml during codebuild, to limit zip size
+      CodeUri: ./
+      Description: !Sub "${StageName}: NestJS API"
+      Tags: 
+        Stage: !Ref StageName      
+      Environment:
+        Variables:
+          # Keep these in sync with dotenv.example
+          APP_STAGE: !Ref StageName
+          DDB_TABLENAME: !Ref DDBTableName
+          SECRET_KEY: !Ref SomeSecretInSSM
+          ENV_TEST: 'hardcoded in sam-template.yml'
+
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - "dynamodb:Batch*"
+                - "dynamodb:Describe*"
+                - "dynamodb:Get*"
+                - "dynamodb:Query"
+                - "dynamodb:Scan"
+                - "dynamodb:DeleteItem"
+                - "dynamodb:UpdateItem"
+                - "dynamodb:PutItem"
+              Resource: !Sub "arn:aws:dynamodb:*:*:table/${DDBTableName}"
+      Events:
+        ProxyApiGreedy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref APIG
+            Path: /{proxy+}
+            Method: ANY
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  RestApi:
+    Description: "API Gateway endpoint URL for Prod stage"
+    Value: !Sub "https://${APIG}.execute-api.${AWS::Region}.amazonaws.com/${StageName}/"
