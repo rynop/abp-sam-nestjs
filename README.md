@@ -34,7 +34,7 @@ This repo utlizes `sam local start-api` [cli](https://docs.aws.amazon.com/server
 
 Enviornment variables are pulled from [sam-template.yml](./aws/cloudformation/sam-template.yml)`::Environment.Variables` (not `.env`).  To simulate how these will be set in cloudformation, the `--parameter-overrides` `sam` option is used.  See `run/sam-start-api` in [Makefile](./Makefile) for an example.
 
-1. `make run watch` will compile typescript on file changes.
+1. `make run/watch` will compile typescript on file changes.
 1. In another terminal run `make run/sam-start-api`
 1. Open http://127.0.0.1:3000/v1 and look at the console for the app env vars.
 
