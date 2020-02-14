@@ -28,7 +28,7 @@
     "@nestjs/common": "^6.0.0",
     "@nestjs/core": "^6.0.0",
     "@nestjs/platform-fastify": "^6.5.3",
-    "aws-lambda": "^0.1.2",
+    "aws-lambda": "^1.0.5",
     "aws-sdk": "^2.503.0",
     "aws-serverless-fastify": "^1.0.10",
     "class-transformer": "^0.2.3",
